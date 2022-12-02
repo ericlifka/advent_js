@@ -1,4 +1,4 @@
-import { input } from './input/01.mjs'
+import { input } from '../input/01.mjs'
 
 let result = input
   .trim()
