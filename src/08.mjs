@@ -1,42 +1,49 @@
 import { input } from '../input/08.mjs'
 
-let trees = input
+const maxReducer = (a, b) => Math.max(a, b)
+
+const trees = input
   .trim()
   .split('\n')
   .map( row => row.split('').map( d => parseInt(d, 10)))
 
-let visi = trees.map( row => row.map(_ => 0) )
-
-for (let y = 0; y < trees.length; y++) {
-  let leftHeight = -1
-  let rightHeight = -1
-  for (let x = 0; x < trees[y].length; x++) {
-    if (leftHeight < trees[y][x]) {
-      visi[y][x] += 1
-      leftHeight = trees[y][x]
-    }
-    if (rightHeight < trees[y][trees[y].length - x - 1]) {
-      visi[y][trees[y].length - x - 1] += 1
-      rightHeight = trees[y][trees[y].length - x - 1]
-    }
+const slice = (x, y, dx, dy) => {
+  let s = []
+  while (  (x += dx) >= 0
+        && (y += dy) >= 0
+        && y < trees.length 
+        && x < trees[y].length) {
+    s.push(trees[y][x])
   }
+  return s
 }
 
-for (let x = 0; x < trees[0].length; x++) {
-  let topHeight = -1
-  let bottomHeight = -1
-  for (let y = 0; y < trees.length; y++) {
-    if (topHeight < trees[y][x]) {
-      visi[y][x] += 1
-      topHeight = trees[y][x]
-    }
-    if (bottomHeight < trees[trees.length - y - 1][x]) {
-      visi[trees.length - y - 1][x] += 1
-      bottomHeight = trees[trees.length - y - 1][x]
-    }
-  }
-}
+const getSlices = (x, y) =>
+  [ slice(x, y,  0,  1)
+  , slice(x, y,  1,  0)
+  , slice(x, y,  0, -1)
+  , slice(x, y, -1,  0)
+  ]
 
-let visibleTrees = visi.reduce((count, row) => count + row.reduce((c, tree) => c + (tree > 0 ? 1 : 0), 0), 0)
+let countVisible = trees
+  .map((row, y) => row.map((tree, x) =>
+    getSlices(x, y)
+      .map( slice => slice.reduce( (blocked, t) => blocked || t >= tree, false ))
+      .reduce( (visible, blocked) => visible || !blocked, false )))
+  .reduce( (sum, row) => sum + row.reduce( (s, t) => s + +t, 0 ), 0 )
 
-console.log(visibleTrees)
+console.log('part1', countVisible)
+
+let visibilityScores = trees
+  .map((row, y) => row.map((tree, x) =>
+    getSlices(x, y)
+      .map( slice => slice
+        .reduce( ({ count, blocked }, t) => blocked
+                                            ? { count, blocked }
+                                            : { count: count + 1
+                                              , blocked: t >= tree }
+               , { count: 0, blocked: false }))
+      .reduce((score, n) => score * n.count, 1)))
+  .map( row => row.reduce(maxReducer) ).reduce(maxReducer)
+
+console.log('part2', visibilityScores)
