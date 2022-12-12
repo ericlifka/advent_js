@@ -1,12 +1,13 @@
+import './utils.mjs'
 import { input } from '../input/12.mjs'
 
 let inputHeights = input.trim().split('\n').map( line => line.split('') )
-let START = inputHeights.reduce((location, row, y) => location || row.reduce((location, ch, x) => ch == 'S' ? ({x, y}) : location, null), null)
-let END = inputHeights.reduce((location, row, y) => location || row.reduce((location, ch, x) => ch == 'E' ? ({x, y}) : location, null), null)
-let allStarts = inputHeights.reduce((starts, row, y) => row.reduce((starts, ch, x) => ch == 'S' || ch == 'a' ? [...starts, {x, y}] : starts, starts), [])
+let START = inputHeights.reduce2d((loc, ch, y, x) => ch == 'S' ? ({x, y}) : loc, null)
+let END = inputHeights.reduce2d((loc, ch, y, x) => ch == 'E' ? ({x, y}) : loc, null)
+let allStarts = inputHeights.reduce2d((starts, ch, y, x) => ch == 'S' || ch == 'a' ? [...starts, {x, y}] : starts, [])
 
-const getHeights = () => inputHeights.map( row => row.map( ch => ch == 'S' ? 1 : ch == 'E' ? 26 : ch.charCodeAt(0) - 'a'.charCodeAt(0) + 1 ))
-const getSteps = start => inputHeights.map((line, y) => line.map((_, x) => y == start.y && x == start.x ? 0 : Number.MAX_SAFE_INTEGER ))
+const getHeights = () => inputHeights.map2d( ch => ch == 'S' ? 1 : ch == 'E' ? 26 : ch.charCodeAt(0) - 'a'.charCodeAt(0) + 1 )
+const getSteps = start => inputHeights.map2d((_, y, x) => y == start.y && x == start.x ? 0 : Number.MAX_SAFE_INTEGER )
 const getNeighbors = ({x, y}) => [ {x, y: y + 1}, {x, y: y - 1} , {y, x: x + 1}, {y, x: x - 1} ]
 
 const stepsFromStartToEnd = (start, end) => {
