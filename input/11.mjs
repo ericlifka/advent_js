@@ -1,5 +1,4 @@
-` // used to create program, not parsed for today's solution.
-
+export const input = `
 Monkey 0:
   Starting items: 72, 97
   Operation: new = old * 13
