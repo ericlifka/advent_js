@@ -1,4 +1,4 @@
-import { input } from '../input/13.mjs'
+import { input, p1Input, p2Input } from '../input/13.mjs'
 
 const ORDERED = -1, UNORDERED = 1, NEUTRAL = 0
 
@@ -21,21 +21,12 @@ const compareLists = ([firstLeft, ...restLeft], [firstRight, ...restRight]) =>
 const toList = val => typeof val == 'number' ? [ val ] : val
 
 
-let part1 = input
-  .trim()
-  .split('\n\n')
-  .map( pair => pair.split('\n').map( val => eval(val)))
+let part1 = p1Input(input)
   .map(([left, right]) => compare(left, right))
-  .map((sortVal, i) => sortVal == UNORDERED ? 0 : i + 1)
-  .reduce((a, b) => a + b)
+  .reduce((accum, sortVal, i) => sortVal == UNORDERED ? accum : accum + i + 1, 0)
 
-let packets = 
-`[[2]]\n[[6]]\n${input}`
-  .trim()
-  .replaceAll('\n\n', '\n')
-  .split('\n')
-  .map( val => eval(val))
-
+  
+let packets = [ [[2]], [[6]], ...p2Input(input) ]
 packets[0].flag = packets[1].flag = true
 
 let part2 = packets

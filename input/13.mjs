@@ -1,3 +1,16 @@
+export const p1Input = input => 
+  input
+    .trim()
+    .split('\n\n')
+    .map( pair => pair.split('\n').map( val => eval(val)))
+
+export const p2Input = input =>
+  input
+    .trim()
+    .replaceAll('\n\n', '\n')
+    .split('\n')
+    .map( val => eval(val))
+
 export const example = `
 []
 [[]]
