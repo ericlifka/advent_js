@@ -11,12 +11,7 @@ input.trim().split('\n')
       importantValves.push(valve)
     }
   })
-
-// console.log(network)
-// console.log(importantValves)
-
-// console.log(importantValves.map( valve => [ valve, network[valve].rate ]).sort(([vl, l], [vr, r]) => l - r))
-
+  
 const shortestPath = (start, end) => {
   let seen = new Set([start])
   let queue = [ [start, 0] ]
@@ -47,31 +42,47 @@ importantValves.forEach( valve => {
   importantNetwork[valve] = connections
 })
 
-let queue = [ {node: 'AA', minutes: 30, pressure: 0, visited: new Set()} ]
-let paths = []
-
-while (queue.length > 0) {
-  let {node, minutes, pressure, visited} = queue.shift()
-  let count = 0
-  importantNetwork[node].forEach(([other, distance]) => {
-    if (!visited.has(other) && distance < minutes) {
-      let newTime = minutes - distance - 1
-      queue.push({
-        node: other,
-        minutes: newTime,
-        pressure: pressure + newTime * network[other].rate,
-        visited: new Set([...visited, other])
-      })
-      count++
+const findPaths = (minutes, pressure = 0, visited = new Set()) => {
+  let queue = [{ node: 'AA', minutes, pressure, visited }]
+  let paths = [ ]
+  while (queue.length > 0) {
+    let {node, minutes, pressure, visited} = queue.shift()
+    let count = 0
+    importantNetwork[node].forEach(([other, distance]) => {
+      if (!visited.has(other) && distance < minutes) {
+        let newTime = minutes - distance - 1
+        queue.push({
+          node: other,
+          minutes: newTime,
+          pressure: pressure + newTime * network[other].rate,
+          visited: new Set([...visited, other])
+        })
+        count++
+      }
+    })
+    if (count == 0) {
+      paths.push([ pressure, visited])
     }
-  })
-  if (count == 0) {
-    console.log('path found: ', pressure, ' - ', visited)
-    paths.push([ pressure, visited])
   }
+  return paths  
 }
 
-paths.sort(([l], [r]) => r - l)
-console.log('paths found: ', paths.length)
-console.log('best path: ', paths[0])
-// console.log(paths)
+let start = Date.now()
+let part1 = findPaths(30).sort(([l], [r]) => r - l)
+let p1checkpoint = Date.now()
+console.log('part1: ', part1[0])
+console.log('\ttotal paths found:', part1.length)
+console.log('\t', (p1checkpoint - start)/60000, 'm')
+
+let longestPath = [ 0, new Set() ]
+findPaths(26)
+  .forEach(([ pressure, visited ]) => {
+    let elephantPaths = findPaths(26, pressure, visited).sort(([l], [r]) => r - l)
+    console.log('\t\tfound ', elephantPaths.length, 'elephant paths')
+    if (elephantPaths[0][0] > longestPath[0]) {
+      longestPath = elephantPaths[0]
+    }
+  })
+
+console.log('part2:', longestPath)
+console.log('\t', (Date.now() - p1checkpoint)/60000, 'm')
