@@ -32,7 +32,7 @@ const testBlueprint = (blueprint, target) => {
   let thresholds = new Array(target).fill(0)
   let maxGeo = { resources: { geo: 0 } }
   while (queue.length > 0) {
-    let state = queue.shift()
+    let state = queue.pop()
     let newStates = []
 
     if (state.bots.obs >= 1) {
