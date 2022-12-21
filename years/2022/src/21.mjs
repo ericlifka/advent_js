@@ -3,79 +3,42 @@ import { input } from '../input/21.mjs'
 let monkeys = { }
 input.trim().split('\n')
   .map( line => line.split(': ') )
-  .forEach(([monkey, expr]) =>
-    monkeys[monkey] = 
-    /^\d+$/.test(expr)
-        ? parseInt(expr, 10)
-        : expr.split(' '))
+  .forEach(([monkey, expr]) => monkeys[monkey] = 
+    /^\d+$/.test(expr) ? parseInt(expr, 10) : expr.split(' '))
 
-const expressions = { '+': (l, r) => l + r
-                    , '-': (l, r) => l - r
-                    , '*': (l, r) => l * r
-                    , '/': (l, r) => l / r 
-                    , '=': (l, r) => l == r }
+const expressions = { '+': (l, r) => l + r, '-': (l, r) => l - r
+                    , '*': (l, r) => l * r, '/': (l, r) => l / r }
+
+const lReverseExpressions = { '+': (l, r) => l - r, '-': (l, r) => r - l
+                            , '*': (l, r) => l / r, '/': (l, r) => r / l }
+
+const rReverseExpressions = { '+': (l, r) => l - r, '-': (l, r) => l + r
+                            , '*': (l, r) => l / r, '/': (l, r) => l * r }
 
 let cache = {}
 const getMonkeyExpr = monkey => {
-  if (cache[monkey] != undefined) {
-    return cache[monkey]
-  }
-  else if (typeof monkeys[monkey] == "number"|| monkeys[monkey] == 'X') {
-    return cache[monkey] = monkeys[monkey]
-  } else {
-    let [left, expr, right] = monkeys[monkey]
-    let leftResult = getMonkeyExpr(left)
-    let rightResult = getMonkeyExpr(right)
-    if (typeof leftResult == 'number' && typeof rightResult == 'number') {
-      return cache[monkey] = expressions[expr](leftResult, rightResult)
+  if (cache[monkey] == undefined) {
+    if (typeof monkeys[monkey] == "number"|| monkeys[monkey] == 'X') {
+      cache[monkey] = monkeys[monkey]
     } else {
-      return cache[monkey] = [expr, leftResult, rightResult]
+      let [left, expr, right] = monkeys[monkey]
+      let [leftResult, rightResult] = [getMonkeyExpr(left), getMonkeyExpr(right)]
+      cache[monkey] = (typeof leftResult == 'number' && typeof rightResult == 'number')
+        ? expressions[expr](leftResult, rightResult)
+        : [expr, leftResult, rightResult]
     }
   }
+  return cache[monkey]
 }
 
 const unwindEquation = (resultVal, equation) => {
   while (true) {
     let [symbol, left, right] = equation
 
-    switch (symbol) {
-      case '+':
-        if (typeof left == 'number') {
-          resultVal = resultVal - left
-          equation = right
-        } else {
-          resultVal = resultVal - right
-          equation = left
-        }
-        break
-      case '*':
-        if (typeof left == 'number') {
-          resultVal = resultVal / left
-          equation = right
-        } else {
-          resultVal = resultVal / right
-          equation = left
-        }
-        break
-      case '-':
-        if (typeof left == 'number') {
-          resultVal = left - resultVal
-          equation = right
-        } else {
-          resultVal = resultVal + right
-          equation = left
-        }
-        break
-      case '/':
-        if (typeof left == 'number') {
-          resultVal = left / resultVal
-          equation = right
-        } else {
-          resultVal = resultVal * right
-          equation = left
-        }
-        break
-    }
+    equation = typeof left == 'number' ? right : left
+    resultVal = typeof left == 'number' 
+      ? lReverseExpressions[symbol](resultVal, left) 
+      : rReverseExpressions[symbol](resultVal, right)
 
     if (equation == 'X')
       return resultVal
